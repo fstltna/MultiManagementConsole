@@ -1,5 +1,5 @@
 # Multicraft Management Console (1.0)
-Allows you to manage your Multicraft server with a text based GUI -  Official support sites: [Official Github Repo](https://github.com/fstltna/MinetestManagementConsole) - [Official Forum](https://minecity.online/index.php/forum/management-console)
+Allows you to manage your Multicraft server with a text based GUI -  Official support sites: [Official Github Repo](https://github.com/fstltna/MultiManagementConsole) - [Official Forum](https://minecity.online/index.php/forum/management-console)
 
 ---
 
