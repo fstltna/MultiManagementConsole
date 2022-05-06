@@ -1,0 +1,523 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use UI::Dialog;
+use Term::ReadKey;
+use Term::ANSIScreen qw(cls);
+use POSIX qw(strftime);
+use Number::Bytes::Human qw(format_bytes parse_bytes);
+
+my $FileEditor = "/bin/nano";
+my $InitDName = "/home/mtowner/bin/multicraft";
+my $MINETESTDIR = "/home/mtowner/MultiCraft2";
+my $MINEHOME = "/home/mtowner";
+my $BackupCommand = "/home/mtowner/MultiBackup/multibackup.pl";
+my $UpdateCommand = "/usr/bin/git pull";
+my $PagerCommand = "/usr/bin/less";
+my $Logfile = "/home/mtowner/MultiCraft2/debug.txt";
+my $PlayersDir = "/home/mtowner/MultiCraft2/worlds/world/players";
+my $MMCDir = "/home/mtowner/MultiManagementConsole";
+my $BackupToolDir = "/home/mtowner/MultiBackup";
+my $StartupDir = "/home/mtowner/MultiStartup";
+my $MinetestConf = "/home/mtowner/MultiCraft2/multicraft.conf";
+my $MinetestWorld = "/home/mtowner/MultiCraft2/worlds/world/world.mt";
+my $BACKUP_DIR = "/home/mtowner/backups";
+my $RestoreCommand = "tar xvzf";
+my $DEBUG_MODE = "off";
+my $NewsFile = "/home/mtowner/MultiCraft2/worlds/world/news.txt";
+my $BinDir = "/home/mtowner/bin";
+
+###################################################
+# No changes below here
+###################################################
+
+my $MySettings = "$ENV{'HOME'}/.mcmcrc";
+
+my $MMC_ver = "1.0";
+my $Record = "false";	# Are results saved?
+my $TempDir = "/tmp";
+my $RobotName = "";
+my $BotVersion = "";
+my $UserName = "";
+my $ServerStatus = "foo";
+
+if ($ENV{'EDITOR'})
+{
+        $FileEditor = $ENV{'EDITOR'};
+}
+
+my $menuselection = "";
+
+sub PrintDebugCommand
+{
+	if ($DEBUG_MODE eq "off")
+	{
+		return;
+	}
+	my $PassedString = shift;
+	print "About to run:\n$PassedString\n";
+	print "Press Enter To Run This:";
+	my $entered = <STDIN>;
+}
+
+
+my $d = new UI::Dialog ( backtitle => "Multicraft Management Console v$MMC_ver", height => 20, width => 65, listheight => 5,
+	order => [ 'ascii', 'cdialog', 'xdialog' ]);
+
+my $windowtitle = "Welcome to the Multicraft Management Console!";
+my $enjoyedtitle = "We hope you enjoyed MCMC!";
+my $introtext =
+"This is the Multicraft Management Console, a utility for Multicraft operators
+to manage their servers from a text GUI rather than the command line.";
+
+$d->msgbox( title => $windowtitle, text => $introtext );
+
+if (($d->state() eq "ESC") || ($d->state() eq "CANCEL"))
+{
+	exit 0;
+}
+
+# Check for config file
+if (-f $MySettings)
+{
+	# Read in settings
+	open (my $FH, "<", $MySettings) or die "Could not read default file '$MySettings' $!";
+	while (<$FH>)
+	{
+		chop();
+		my ($Command, $Setting) = split(/=/, $_);
+		if ($Command eq "fileeditor")
+		{
+			$FileEditor = $Setting;
+		}
+		if ($Command eq "initdname")
+		{
+			$InitDName = $Setting;
+		}
+		if ($Command eq "multicraftdir")
+		{
+			$MINETESTDIR = $Setting;
+		}
+		if ($Command eq "backupcommand")
+		{
+			$BackupCommand = $Setting;
+		}
+		if ($Command eq "updatecommand")
+		{
+			$UpdateCommand = $Setting;
+		}
+		if ($Command eq "pagercommand")
+		{
+			$PagerCommand = $Setting;
+		}
+		if ($Command eq "logfile")
+		{
+			$Logfile = $Setting;
+		}
+		if ($Command eq "playerdir")
+		{
+			$PlayersDir = $Setting;
+		}
+		if ($Command eq "mcmcdir")
+		{
+			$MMCDir = $Setting;
+		}
+		if ($Command eq "startupdir")
+		{
+			$StartupDir = $Setting;
+		}
+		if ($Command eq "multicraftconf")
+		{
+			$MinetestConf = $Setting;
+		}
+		if ($Command eq "multicraftworld")
+		{
+			$MinetestWorld = $Setting;
+		}
+		if ($Command eq "newsfile")
+		{
+			$NewsFile = $Setting;
+		}
+		if ($Command eq "debugmode")
+		{
+			$DEBUG_MODE = $Setting;
+		}
+		if ($Command eq "backupdir")
+		{
+			$BACKUP_DIR = $Setting;
+		}
+		if ($Command eq "bindir")
+		{
+			$BinDir = $Setting;
+		}
+		if ($Command eq "backuptooldir")
+		{
+			$BackupToolDir = $Setting;
+		}
+		if ($Command eq "restorecommand")
+		{
+			$RestoreCommand = $Setting;
+		}
+		if ($Command eq "minehome")
+		{
+			$MINEHOME = $Setting;
+		}
+	}
+	close($FH);
+}
+else
+{
+	# Store defaults
+	open (my $FH, ">", $MySettings) or die "Could not create default file '$MySettings' $!";
+	print $FH "fileeditor=$FileEditor\n";
+	print $FH "initdname=$InitDName\n";
+	print $FH "multicraftdir=$MINETESTDIR\n";
+	print $FH "backupcommand=$BackupCommand\n";
+	print $FH "updatecommand=$UpdateCommand\n";
+	print $FH "pagercommand=$PagerCommand\n";
+	print $FH "logfile=$Logfile\n";
+	print $FH "playerdir=$PlayersDir\n";
+	print $FH "mcmcdir=$MMCDir\n";
+	print $FH "startupdir=$StartupDir\n";
+	print $FH "multicraftconf=$MINETESTDIR/multicraft.conf\n";
+	print $FH "multicraftworld=$MINETESTDIR/worlds/world/world.mt\n";
+	print $FH "newsfile=$MINETESTDIR/worlds/world/news.txt\n";
+	print $FH "debugmode=$DEBUG_MODE\n";
+	print $FH "backupdir=$BACKUP_DIR\n";
+	print $FH "bindir=$BinDir\n";
+	print $FH "backuptooldir=$BackupToolDir\n";
+	print $FH "restorecommand=$RestoreCommand\n";
+	print $FH "minehome=$MINEHOME\n";
+	close($FH);
+}
+
+sub CheckServerStatus
+{
+	my $running=`ps ax|grep multicraftserver|grep -v grep`;
+	if ($running ne "")
+	{
+		$ServerStatus = "Running";
+	}
+	else
+	{
+		$ServerStatus = "Stopped";
+	}
+
+}
+
+sub BackupToolsMenu
+{
+	my $WantRespawn="ON";
+	CheckServerStatus();
+	if (-f "$MINETESTDIR/nostart")
+	{
+		$WantRespawn="OFF";
+	}
+
+	$menuselection = $d->menu( title => "Backup Tools Menu", text => "Server is $ServerStatus and respawn is $WantRespawn - Select one:",
+                            list => [ '1', 'Run Backup',
+                                      '2', 'Restore Backup',
+                                      'q', 'Main Menu' ] );
+}
+
+sub UpdateToolsMenu
+{
+	my $WantRespawn="ON";
+	CheckServerStatus();
+	if (-f "$MINETESTDIR/nostart")
+	{
+		$WantRespawn="OFF";
+	}
+	$menuselection = $d->menu( title => "Update Tools Menu", text => "Server is $ServerStatus and respawn is $WantRespawn - Select one:",
+                            list => [ '1', 'Update MCMC',
+                                      '2', 'Update Backup',
+                                      '3', 'Update Startup',
+                                      'q', 'Main Menu' ] );
+}
+
+sub GetWhichBackup
+{
+	my $UsedFile = 0;
+	opendir(DIR, $BACKUP_DIR) or die $!;
+	my @file_list;
+	while ( my $file = readdir(DIR))
+	{
+		# We only want files
+		next unless (-f "$BACKUP_DIR/$file");
+
+		# Use a regular expression to find files ending in .tgz
+		next unless ($file =~ m/\.tgz$/);
+		push @file_list, "$BACKUP_DIR/$file";
+	}
+	closedir(DIR);
+
+	#print scalar @file_list;
+	system("clear");
+	print "Backup\tBackup Date\t\tSize\n";
+	for my $file (sort
+		{
+			my @a_stat = stat($a);
+			my @b_stat = stat($b);
+			$b_stat[8] <=> $a_stat[8];
+		} @file_list ) {
+			$UsedFile++;
+			my @stat = stat ("$file");
+			my $size = format_bytes($stat[7], bs => 1000);
+			print "$UsedFile\t" . strftime("%m/%d/%Y %H:%M:%S", localtime($stat[8])) . "\t$size ($file)\n";
+		};
+
+	#Ask user which one
+	while(-1)
+	{
+		print "Restore which backup? (1-5) or \"quit\": ";
+		my $Chosen = <STDIN>;
+		chop ($Chosen);
+		if ((lc($Chosen) eq "q") || (lc($Chosen) eq "quit") || ($Chosen eq ""))
+		{
+			return "";
+		}
+		my $IntChosen = int($Chosen);
+		if (($IntChosen >= 1) && ($IntChosen <= 5))
+		{
+			return $Chosen;
+		}
+	}
+}
+
+sub DoRestore
+{
+	my $WhichBackup = "";
+
+	# Get which backup they want
+	$WhichBackup = GetWhichBackup();
+	if ($WhichBackup eq "")
+	{
+		print "No backup selected\n";
+		return;
+	}
+	print "Using backup $WhichBackup...\n";
+
+	# Turn off respawn
+	PrintDebugCommand("touch $MINETESTDIR/nostart");
+	system("touch $MINETESTDIR/nostart");
+	# Kill the server process
+	print "Killing Multicraft process, please wait...\n";
+	system("killall /home/mtowner/MultiCraft2/bin/startmulticraft");
+	sleep(5);
+	# Create new folder
+	print "Creating new folder, please wait...";
+	PrintDebugCommand("mkdir $MINEHOME-new");
+	system("mkdir $MINEHOME-new");
+	PrintDebugCommand("touch $MINEHOME-new/nostart");
+	system("touch $MINEHOME-new/nostart");
+	# Swap folders
+	print "Swapping folders, please wait...";
+	PrintDebugCommand("mv $MINEHOME/multicraft $MINEHOME/multicraft-keep");
+	system("mv $MINEHOME/multicraft $MINEHOME/multicraft-keep");
+	PrintDebugCommand("mv $MINEHOME/multicraft-new $MINEHOME/multicraft");
+	system("mv $MINEHOME-new $MINETESTDIR");
+	PrintDebugCommand("rm -r $MINEHOME/multicraft-keep");
+	system("rm -r $MINEHOME/multicraft-keep");
+
+	# Do the restore
+	chdir ($MINEHOME);
+	PrintDebugCommand("$RestoreCommand $BACKUP_DIR/minebackup-$WhichBackup.tgz");
+	system("$RestoreCommand $BACKUP_DIR/minebackup-$WhichBackup.tgz");
+	unlink("$MINETESTDIR/nostart");
+}
+
+sub BackupTools
+{
+	while (-1)
+	{
+		BackupToolsMenu();
+		if (($menuselection eq "CANCEL") || ($menuselection eq "ESC") || ($menuselection eq "") || ($menuselection eq "q") || ($menuselection eq "Q"))
+		{
+			return;
+		}
+		elsif ($menuselection eq "1")
+		{
+			# Run a backup
+			PrintDebugCommand("$BackupCommand");
+			system("$BackupCommand");
+                	print "Press Enter To Continue";
+                	my $entered = <STDIN>;
+		}
+		elsif ($menuselection eq "2")
+		{
+			# Do a restore
+			DoRestore();
+                	print "Press Enter To Continue";
+                	my $entered = <STDIN>;
+		}
+	}
+}
+
+sub DoUpdate
+{
+	my $DesiredDir = $_[0];
+
+	# Update desired utility
+	chdir ($DesiredDir);
+	PrintDebugCommand("Running $UpdateCommand in $DesiredDir\n");
+	system("$UpdateCommand");
+	print "Press Enter To Continue";
+	my $entered = <STDIN>;
+}
+
+sub UpdateTools
+{
+	while (-1)
+	{
+		UpdateToolsMenu();
+		if (($menuselection eq "CANCEL") || ($menuselection eq "ESC") || ($menuselection eq "") || ($menuselection eq "q") || ($menuselection eq "Q"))
+		{
+			return;
+		}
+		elsif ($menuselection eq "1")
+		{
+			# Update MCMC
+			DoUpdate($MMCDir);
+		}
+		elsif ($menuselection eq "2")
+		{
+			# Update BackupToolDir
+			DoUpdate($BackupToolDir);
+		}
+		elsif ($menuselection eq "3")
+		{
+			# Update Startup
+			DoUpdate($StartupDir);
+			system("cp $StartupDir/multicraft $BinDir");
+			system("cp $StartupDir/startrelay $BinDir");
+			system("cp $StartupDir/startmulticraft $MINETESTDIR");
+		}
+	}
+}
+
+sub MainMenu
+{
+	my $WantRespawn="ON";
+	CheckServerStatus();
+	if (-f "$MINETESTDIR/nostart")
+	{
+		$WantRespawn="OFF";
+	}
+
+	$menuselection = $d->menu( title => "Main Menu", text => "Server is $ServerStatus and respawn is $WantRespawn - Select one:",
+                            list => [ '1', 'Start Watchdog',
+                                      '2', 'Stop Watchdog',
+                                      '3', 'Server Console',
+                                      '4', 'Turn Off Respawn',
+                                      '5', 'Turn Respawn On',
+                                      '6', 'Edit World Cfg',
+                                      '7', 'Edit multicraft.conf',
+                                      '8', 'Backup / Restore',
+                                      '9', 'View Log',
+                                      '10', 'Online Players',
+                                      '11', 'Edit Settings',
+                                      '12', 'Restart Server',
+                                      '13', 'Edit News.txt',
+                                      '14', 'Update Utils',
+                                      'q', 'Quit MCMC' ] );
+}
+
+while (-1)
+{
+	MainMenu();
+	if (($menuselection eq "CANCEL") || ($menuselection eq "ESC") || ($menuselection eq "") || ($menuselection eq "q") || ($menuselection eq "Q"))
+	{
+		$d->msgbox( title => $enjoyedtitle, text => "Thanks for using MCMC..." );
+		exit 0;
+	}
+	if ($menuselection eq "1")
+	{
+                if ($d->yesno( text => "Confirm starting the server", text => "Are you sure you want to start the server? You should likely use option #12 instead..." ))
+                {
+                        PrintDebugCommand("$InitDName start");
+                        system("$InitDName start");
+                        sleep(10);
+                }
+	}
+	elsif ($menuselection eq "2")
+	{
+		if ($d->yesno( text => "Confirm stopping the server", text => "Are you sure you want to shut down the server?" ))
+		{
+			system("$InitDName stop");
+			sleep(5);
+			system("killall /home/mtowner/MultiCraft2/bin/startmulticraft");
+		}
+	}
+	elsif ($menuselection eq "3")
+	{
+		$d->msgbox( text => "To exit the multicraft console and return to MCMC press CTRL-A CTRL-D" );
+		system("screen -r Multicraft");
+	}
+	elsif ($menuselection eq "4")
+	{
+		# Turn off respawn
+		system("touch $MINETESTDIR/nostart");
+	}
+	elsif ($menuselection eq "5")
+	{
+		# Turn respawn back on
+		if (-f "$MINETESTDIR/nostart")
+		{
+			unlink("$MINETESTDIR/nostart");
+		}
+	}
+	elsif ($menuselection eq "6")
+	{
+		# Edit world.mt file
+		system("$FileEditor $MinetestWorld");
+	}
+	elsif ($menuselection eq "7")
+	{
+		# Edit multicraft.conf file
+		system("$FileEditor $MinetestConf");
+	}
+	elsif ($menuselection eq "8")
+	{
+		# Backup Menu
+		BackupTools();
+	}
+	elsif ($menuselection eq "9")
+	{
+		# View log file
+		system("$PagerCommand $Logfile");
+	}
+	elsif ($menuselection eq "10")
+	{
+		# View online players
+		system("clear");
+		system("ls $PlayersDir");
+		print "Press Enter To Continue";
+		my $entered = <STDIN>;
+	}
+	elsif ($menuselection eq "11")
+	{
+		# Edit multicraft.conf file
+		system("$FileEditor $MySettings");
+	}
+	elsif ($menuselection eq "12")
+	{
+		# Reset server process
+		print "Killing Server Process\n";
+		system("killall /home/mtowner/MultiCraft2/bin/multicraftserver");
+		print "Process killed...";
+		sleep(5);
+	}
+	elsif ($menuselection eq "13")
+	{
+		# Edit news.txt file
+		system("$FileEditor $NewsFile");
+	}
+	elsif ($menuselection eq "14")
+	{
+		# Update Menu
+		UpdateTools();
+	}
+}
+
+exit 0;
