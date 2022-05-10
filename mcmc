@@ -450,9 +450,9 @@ sub InstallMod
 	print "Killing Server Process\n";
 	system("killall $KillAllString");
 	print "Process killed...";
-	print "Waiting 1 minute for server to restart\n";
+	print "Waiting for server to restart\n";
 	my $count = 0;
-	while ($count < 60)
+	while ($count < 120)
 	{
 		$count += 5;
 		print "$count ";
@@ -492,9 +492,9 @@ sub InstallMod
 	print "Killing Server Process\n";
 	system("killall $KillAllString");
 	print "Process killed...";
-	print "Waiting 1 minute for server to restart\n";
+	print "Waiting for server to restart\n";
 	my $count = 0;
-	while ($count < 60)
+	while ($count < 120)
 	{
 		$count += 5;
 		print "$count ";
