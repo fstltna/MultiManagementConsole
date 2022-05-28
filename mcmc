@@ -411,7 +411,7 @@ sub SpaceUsage
 	print "\nSpace Used by you:\n";
 	print "==================\n";
 	system("$DuCommand");
-	print "\nDo you want to remove logs and other expandable items? (n/Y): ";
+	print "\nDo you want to remove logs and other expendable items? (N/y): ";
 	my $input = <>;
 	chomp($input);
 	$input = lc($input);
