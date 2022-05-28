@@ -40,7 +40,7 @@ my $DuCommand = "du -h /home/mtowner/|tail -1";
 
 my $MySettings = "$ENV{'HOME'}/.mcmcrc";
 
-my $MMC_ver = "1.1";
+my $MMC_ver = "1.2";
 my $Record = "false";	# Are results saved?
 my $TempDir = "/tmp";
 my $RobotName = "";
