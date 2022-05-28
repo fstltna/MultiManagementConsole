@@ -33,6 +33,7 @@ my $ServerProcess = "multicraftserver";
 my $ServerStartString = "/home/mtowner/MultiCraft2/bin/startmulticraft";
 my $DfCommand = "df -h /dev/sda";
 my $DuCommand = "du -h /home/mtowner/|tail -1";
+my $FilesToRemove = "$MINETESTDIR/debug.txt $MINETESTDIR/MinetestScreen.log";
 
 ###################################################
 # No changes below here
@@ -402,6 +403,17 @@ sub UpdateTools
 	}
 }
 
+sub RemoveFiles
+{
+	for (split ' ', $FilesToRemove)
+	{
+		if (-f $_)
+		{
+			unlink($_);
+		}
+	}
+}
+
 sub SpaceUsage
 {
 	system("clear");
@@ -417,6 +429,7 @@ sub SpaceUsage
 	$input = lc($input);
 	if (($input eq "y") || ($input eq "yes"))
 	{
+		RemoveFiles();
 		print "Possible files removed...\n";
 		sleep 5;
 		return;
