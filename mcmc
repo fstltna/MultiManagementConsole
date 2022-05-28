@@ -31,6 +31,8 @@ my $ModDir = "/home/mtowner/MultiCraft2/mods";
 my $KillAllString = "/home/mtowner/MultiCraft2/bin/multicraftserver";
 my $ServerProcess = "multicraftserver";
 my $ServerStartString = "/home/mtowner/MultiCraft2/bin/startmulticraft";
+my $DfCommand = "df -h /dev/sda";
+my $DuCommand = "du -h /home/mtowner/|tail -1";
 
 ###################################################
 # No changes below here
@@ -400,6 +402,29 @@ sub UpdateTools
 	}
 }
 
+sub SpaceUsage
+{
+	system("clear");
+	print "System Space:\n";
+	print "==================\n";
+	system("$DfCommand");
+	print "\nSpace Used by you:\n";
+	print "==================\n";
+	system("$DuCommand");
+	print "\nDo you want to remove logs and other expandable items? (n/Y): ";
+	my $input = <>;
+	chomp($input);
+	$input = lc($input);
+	if (($input eq "y") || ($input eq "yes"))
+	{
+		print "Possible files removed...\n";
+		sleep 5;
+		return;
+	}
+	print "Leaving temporary files alone\n";
+	sleep 5;
+}
+
 sub InstallMod
 {
 	system("clear");
@@ -529,6 +554,7 @@ sub MainMenu
                                       '13', 'Edit News.txt',
                                       '14', 'Update Utils',
                                       '15', 'Install Mod',
+                                      '16', 'Space Usage',
                                       'q', 'Quit MCMC' ] );
 }
 
@@ -631,6 +657,11 @@ while (-1)
 	{
 		# Install Mod
 		InstallMod();
+	}
+	elsif ($menuselection eq "16")
+	{
+		# Space Usage
+		SpaceUsage();
 	}
 }
 
