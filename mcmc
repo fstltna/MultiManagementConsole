@@ -34,6 +34,7 @@ my $ServerStartString = "/home/mtowner/MultiCraft2/bin/startmulticraft";
 my $DfCommand = "df -h /dev/sda";
 my $DuCommand = "du -h /home/mtowner/|tail -1";
 my $FilesToRemove = "$MINETESTDIR/debug.txt $MINETESTDIR/MinetestScreen.log";
+my $CrontabCommand = "crontab -e";
 
 ###################################################
 # No changes below here
@@ -41,7 +42,7 @@ my $FilesToRemove = "$MINETESTDIR/debug.txt $MINETESTDIR/MinetestScreen.log";
 
 my $MySettings = "$ENV{'HOME'}/.mcmcrc";
 
-my $MMC_ver = "1.2";
+my $MMC_ver = "1.3";
 my $Record = "false";	# Are results saved?
 my $TempDir = "/tmp";
 my $RobotName = "";
@@ -420,7 +421,7 @@ sub SpaceUsage
 	print "System Space:\n";
 	print "==================\n";
 	system("$DfCommand");
-	print "\nSpace Used by you:\n";
+	print "\nSpace Used by You:\n";
 	print "==================\n";
 	system("$DuCommand");
 	print "\nDo you want to remove logs and other expendable items? (N/y): ";
@@ -568,6 +569,7 @@ sub MainMenu
                                       '14', 'Update Utils',
                                       '15', 'Install Mod',
                                       '16', 'Space Usage',
+                                      '17', 'Scheduled Tasks',
                                       'q', 'Quit MCMC' ] );
 }
 
@@ -675,6 +677,11 @@ while (-1)
 	{
 		# Space Usage
 		SpaceUsage();
+	}
+	elsif ($menuselection eq "17")
+	{
+		# Space Usage
+		system("$CrontabCommand");
 	}
 }
 
