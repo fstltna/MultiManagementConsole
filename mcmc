@@ -35,6 +35,7 @@ my $DfCommand = "df -h /dev/sda";
 my $DuCommand = "du -h /home/mtowner/|tail -1";
 my $FilesToRemove = "$MINETESTDIR/debug.txt $MINETESTDIR/MinetestScreen.log";
 my $CrontabCommand = "crontab -e";
+my $BuildCommand = "make";
 
 ###################################################
 # No changes below here
@@ -42,7 +43,7 @@ my $CrontabCommand = "crontab -e";
 
 my $MySettings = "$ENV{'HOME'}/.mcmcrc";
 
-my $MMC_ver = "1.3";
+my $MMC_ver = "1.4";
 my $Record = "false";	# Are results saved?
 my $TempDir = "/tmp";
 my $RobotName = "";
@@ -227,6 +228,72 @@ sub BackupToolsMenu
                             list => [ '1', 'Run Backup',
                                       '2', 'Restore Backup',
                                       'q', 'Main Menu' ] );
+}
+
+sub RebuildServer
+{
+	chdir($MINETESTDIR);
+	system("clear");
+	system($BuildCommand);
+	print "--- Press Enter To Continue ---";
+	my $entered = <STDIN>;
+}
+
+sub UpdateServer
+{
+	chdir($MINETESTDIR);
+	system("clear");
+	system($UpdateCommand);
+	print "--- Press Enter To Continue ---";
+	my $entered = <STDIN>;
+}
+
+sub ServerToolsMenu
+{
+	my $WantRespawn="ON";
+	CheckServerStatus();
+	if (-f "$MINETESTDIR/nostart")
+	{
+		$WantRespawn="OFF";
+	}
+	$menuselection = $d->menu( title => "Server Tools Menu", text => "Server is $ServerStatus and respawn is $WantRespawn - Select one:",
+                            list => [ '1', 'Run Backup First',
+                                      '2', 'Get Updates',
+                                      '2', 'Rebuild Server',
+                                      'q', 'Main Menu' ] );
+}
+
+sub ServerTools
+{
+	while (-1)
+	{
+		ServerToolsMenu();
+		if (($menuselection eq "CANCEL") || ($menuselection eq "ESC") || ($menuselection eq "") || ($menuselection eq "q") || ($menuselection eq "Q"))
+		{
+			return;
+		}
+		elsif ($menuselection eq "1")
+		{
+			# Run a backup
+			system("clear");
+			PrintDebugCommand("$BackupCommand");
+			system("$BackupCommand");
+                	print "Press Enter To Continue";
+                	my $entered = <STDIN>;
+		}
+		elsif ($menuselection eq "2")
+		{
+			# Pull Updates
+			PrintDebugCommand("$UpdateCommand");
+			UpdateServer();
+		}
+		elsif ($menuselection eq "3")
+		{
+			# Rebuild Server
+			PrintDebugCommand("$BuildCommand");
+			RebuildServer();
+		}
+	}
 }
 
 sub UpdateToolsMenu
@@ -570,6 +637,8 @@ sub MainMenu
                                       '15', 'Install Mod',
                                       '16', 'Space Usage',
                                       '17', 'Scheduled Tasks',
+                                      '18', 'Current Version',
+                                      '19', 'Server Tasks',
                                       'q', 'Quit MCMC' ] );
 }
 
@@ -682,6 +751,19 @@ while (-1)
 	{
 		# Space Usage
 		system("$CrontabCommand");
+	}
+	elsif ($menuselection eq "18")
+	{
+		# Get Version
+		system("clear");
+		system("$MINETESTDIR/bin/$ServerProcess --version");
+		print "Press Enter To Continue";
+		my $entered = <STDIN>;
+	}
+	elsif ($menuselection eq "19")
+	{
+		# Server Tools
+		ServerTools();
 	}
 }
 
