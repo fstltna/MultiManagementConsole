@@ -248,6 +248,15 @@ sub UpdateServer
 	my $entered = <STDIN>;
 }
 
+sub UpdateGame
+{
+	chdir("$MINETESTDIR/game/minetest_game");
+	system("clear");
+	system($UpdateCommand);
+	print "--- Press Enter To Continue ---";
+	my $entered = <STDIN>;
+}
+
 sub ServerToolsMenu
 {
 	my $WantRespawn="ON";
@@ -259,7 +268,8 @@ sub ServerToolsMenu
 	$menuselection = $d->menu( title => "Server Tools Menu", text => "Server is $ServerStatus and respawn is $WantRespawn - Select one:",
                             list => [ '1', 'Run Backup First',
                                       '2', 'Get Updates',
-                                      '2', 'Rebuild Server',
+                                      '3', 'Rebuild Server',
+                                      '4', 'Update Game',
                                       'q', 'Main Menu' ] );
 }
 
@@ -292,6 +302,12 @@ sub ServerTools
 			# Rebuild Server
 			PrintDebugCommand("$BuildCommand");
 			RebuildServer();
+		}
+		elsif ($menuselection eq "4")
+		{
+			# Rebuild Server
+			PrintDebugCommand("Updating Game");
+			UpdateGame();
 		}
 	}
 }
