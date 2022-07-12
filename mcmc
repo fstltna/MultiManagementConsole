@@ -43,7 +43,7 @@ my $BuildCommand = "make";
 
 my $MySettings = "$ENV{'HOME'}/.mcmcrc";
 
-my $MMC_ver = "1.4";
+my $MMC_ver = "1.5";
 my $Record = "false";	# Are results saved?
 my $TempDir = "/tmp";
 my $RobotName = "";
@@ -248,6 +248,50 @@ sub UpdateServer
 	my $entered = <STDIN>;
 }
 
+sub UpdateMods
+{
+	chdir($ModDir);
+	system("clear");
+	print "Updating your mods\n";
+	print "==================\n";
+	my $ModPrompt = "";
+	my $entered = "";
+	#	system($UpdateCommand);
+	opendir(DIR, $ModDir) or die "Could not open $ModDir\n";
+	# Loop for each directory
+	while (my $filename = readdir(DIR))
+	{
+		if (($filename eq ".") || ($filename eq ".."))
+		{
+			# Skip over "." and ".."
+			next;
+		}
+		#print "$filename\n" if -d $filename;
+		if (-d $filename)
+		{
+			print "Current mod: $filename:\n";
+			print "Update this mod (yes/no/quit):";
+			$ModPrompt = <STDIN>;
+			chop($ModPrompt);
+			if (($ModPrompt eq "quit") || ($ModPrompt eq "q"))
+			{
+				last;
+			}
+			if (($ModPrompt eq "no") || ($ModPrompt eq "n"))
+			{
+				next;
+			}
+			#			chdir("$ModDir/$filename");
+			system("git pull");
+			#			print "--- Press Enter To Continue ---";
+			#			my $entered = <STDIN>;
+		}
+	}
+	closedir(DIR);
+	print "--- Press Enter To Continue ---";
+	$entered = <STDIN>;
+}
+
 sub UpdateGame
 {
 	chdir("$MINETESTDIR/game/minetest_game");
@@ -270,6 +314,7 @@ sub ServerToolsMenu
                                       '2', 'Get Updates',
                                       '3', 'Rebuild Server',
                                       '4', 'Update Game',
+                                      '5', 'Update Mods',
                                       'q', 'Main Menu' ] );
 }
 
@@ -308,6 +353,12 @@ sub ServerTools
 			# Rebuild Server
 			PrintDebugCommand("Updating Game");
 			UpdateGame();
+		}
+		elsif ($menuselection eq "5")
+		{
+			# Rebuild Server
+			PrintDebugCommand("Updating Mods");
+			UpdateMods();
 		}
 	}
 }
