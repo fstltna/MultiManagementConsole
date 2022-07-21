@@ -36,6 +36,9 @@ my $DuCommand = "du -h /home/mtowner/|tail -1";
 my $FilesToRemove = "$MINETESTDIR/debug.txt $MINETESTDIR/MinetestScreen.log";
 my $CrontabCommand = "crontab -e";
 my $BuildCommand = "make";
+my $WhoCommand = "/usr/bin/w";
+my $LastCommand = "/usr/bin/last";
+my $TopCommand = "/usr/bin/top";
 
 ###################################################
 # No changes below here
@@ -43,7 +46,7 @@ my $BuildCommand = "make";
 
 my $MySettings = "$ENV{'HOME'}/.mcmcrc";
 
-my $MMC_ver = "1.5";
+my $MMC_ver = "1.6";
 my $Record = "false";	# Are results saved?
 my $TempDir = "/tmp";
 my $RobotName = "";
@@ -570,7 +573,6 @@ sub SpaceUsage
 		return;
 	}
 	print "Leaving temporary files alone\n";
-	sleep 5;
 }
 
 sub InstallMod
@@ -677,6 +679,75 @@ sub InstallMod
 	sleep 5;
 }
 
+sub ServerStatusMenu
+{
+        my $WantRespawn="ON";
+        CheckServerStatus();
+        if (-f "$MINETESTDIR/nostart")
+        {
+                $WantRespawn="OFF";
+        }
+        $menuselection = $d->menu( title => "Server Status Menu", text => "Server is $ServerStatus and respawn is $WantRespawn - Select one:",
+                            list => [ '1', 'Free Space',
+                                      '2', 'Current Version',
+                                      '3', 'Shell Users',
+                                      '4', 'Last Shell Logins',
+                                      '5', 'Running Processes',
+                                      'q', 'Main Menu' ] );
+}
+
+sub ServerStatusTools
+{
+        while (-1)
+        {
+                ServerStatusMenu();
+                if (($menuselection eq "CANCEL") || ($menuselection eq "ESC") || ($menuselection eq "") || ($menuselection eq "q") || ($menuselection eq "Q"))
+                {
+                        return;
+                }
+                elsif ($menuselection eq "1")
+                {
+                        # Space Usage
+                        system("clear");
+                        SpaceUsage();
+                        print "--- Press Enter To Continue ---";
+                        my $entered = <STDIN>;
+                }
+                elsif ($menuselection eq "2")
+                {
+                        # Get Version
+                        system("clear");
+                        system("$MINETESTDIR/bin/$ServerProcess --version");
+                        print "--- Press Enter To Continue ---";
+                        my $entered = <STDIN>;
+                }
+                elsif ($menuselection eq "3")
+                {
+                        # Who's Online
+                        system("clear");
+                        system("$WhoCommand");
+                        print "--- Press Enter To Continue ---";
+                        my $entered = <STDIN>;
+                }
+                elsif ($menuselection eq "4")
+                {
+                        # Last Logins
+                        system("clear");
+                        system("$LastCommand");
+                        print "--- Press Enter To Continue ---";
+                        my $entered = <STDIN>;
+                }
+                elsif ($menuselection eq "5")
+                {
+                        # Top Processes
+                        system("clear");
+                        print "--- To exit this command press \"q\" ---";
+                        my $entered = <STDIN>;
+                        system("$TopCommand");
+                }
+        }
+}
+
 sub MainMenu
 {
 	my $WantRespawn="ON";
@@ -702,10 +773,9 @@ sub MainMenu
                                       '13', 'Edit News.txt',
                                       '14', 'Update Utils',
                                       '15', 'Install Mod',
-                                      '16', 'Space Usage',
+                                      '16', 'Server Status',
                                       '17', 'Scheduled Tasks',
-                                      '18', 'Current Version',
-                                      '19', 'Server Tasks',
+                                      '18', 'Server Tasks',
                                       'q', 'Quit MCMC' ] );
 }
 
@@ -811,8 +881,8 @@ while (-1)
 	}
 	elsif ($menuselection eq "16")
 	{
-		# Space Usage
-		SpaceUsage();
+		# Server Status Tools
+                ServerStatusTools();
 	}
 	elsif ($menuselection eq "17")
 	{
@@ -820,14 +890,6 @@ while (-1)
 		system("$CrontabCommand");
 	}
 	elsif ($menuselection eq "18")
-	{
-		# Get Version
-		system("clear");
-		system("$MINETESTDIR/bin/$ServerProcess --version");
-		print "Press Enter To Continue";
-		my $entered = <STDIN>;
-	}
-	elsif ($menuselection eq "19")
 	{
 		# Server Tools
 		ServerTools();
