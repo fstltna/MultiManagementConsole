@@ -81,7 +81,7 @@ my $windowtitle = "Welcome to the Multicraft Management Console!";
 my $enjoyedtitle = "We hope you enjoyed MCMC!";
 my $introtext =
 "This is the Multicraft Management Console, a utility for Multicraft operators
-to manage their servers from a text GUI rather than the command line.";
+to manage their servers from a text UI rather than the command line.";
 
 $d->msgbox( title => $windowtitle, text => $introtext );
 
