@@ -46,7 +46,7 @@ my $TopCommand = "/usr/bin/top";
 
 my $MySettings = "$ENV{'HOME'}/.mcmcrc";
 
-my $MMC_ver = "1.6";
+my $MMC_ver = "1.6.1";
 my $Record = "false";	# Are results saved?
 my $TempDir = "/tmp";
 my $RobotName = "";
@@ -808,7 +808,7 @@ while (-1)
 	elsif ($menuselection eq "3")
 	{
 		$d->msgbox( text => "To exit the multicraft console and return to MCMC press CTRL-A CTRL-D" );
-		system("screen -r Multicraft");
+		system("screen -r");
 	}
 	elsif ($menuselection eq "4")
 	{

@@ -1,0 +1,7 @@
+#!/bin/bash
+cpan -i UI::Dialog
+cpan -i Term::ReadKey
+cpan -i Term::ANSIScreen
+cpan -i POSIX
+cpan -i Number::Bytes::Human
+exit 0
