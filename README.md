@@ -3,13 +3,10 @@ Allows you to manage your Multicraft server with a text based GUI -  Official su
 
 ---
 
-You will need to run cpan and install these modules:
+You will need to run cpan and install these modules like this:
 
-- cpan -i UI::Dialog
-- cpan -i Term::ReadKey
-- cpan -i Term::ANSIScreen
-- cpan -i POSIX
-- cpan -i Number::Bytes::Human
+cd /home/mtowner/MultiManagementConsole
+./installdeps
 
 Run "mcmc". If you need to change any settings after this, edit "~/.mcmcrc" and make the desired changes. This can be done within mcmc itself.
 
